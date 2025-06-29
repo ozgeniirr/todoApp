@@ -1,51 +1,75 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import prisma from "../db/prismaClient";
+import { authMiddleware } from "../middleware/authMiddleware";
 
 const router = Router();
 
-// GET /todos - Tüm görevleri getir
-router.get("/", async (req, res) => {
-  const todos = await prisma.todo.findMany();
+// ✅ Tüm görevleri getir (sadece giriş yapan kullanıcıya ait)
+router.get("/", authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  const userId = (req as any).userId;
+
+  const todos = await prisma.todo.findMany({
+    where: { userId },
+  });
+
   res.json(todos);
 });
 
-// routes/todo.ts içinde
-router.post("/", async (req, res) => {
+// ✅ Yeni görev oluştur
+router.post("/", authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  const userId = (req as any).userId;
   const { title } = req.body;
-  const todo = await prisma.todo.create({
-    data: { title },
-  });
-  res.status(201).json(todo);
+
+  try {
+    const newTodo = await prisma.todo.create({
+      data: {
+        title,
+        completed: false, // default olarak tamamlanmamış
+        user: { connect: { id: userId } }, // ilişkilendir
+      },
+    });
+
+    res.status(201).json(newTodo);
+  } catch (error) {
+    res.status(500).json({ message: "Görev eklenemedi", error });
+  }
 });
 
-router.put("/:id", async (req, res) => {
+// ✅ Belirli görevi güncelle (tamamlandı bilgisi)
+router.put("/:id", authMiddleware, async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const {completed } = req.body;
+  const { completed } = req.body;
 
-  const updated = await prisma.todo.update({
-    where: { id: Number(id) },
-    data: { completed },
-  });
+  try {
+    const updatedTodo = await prisma.todo.update({
+      where: { id: Number(id) },
+      data: { completed },
+    });
 
-  res.json(updated);
+    res.json(updatedTodo);
+  } catch (error) {
+    res.status(500).json({ message: "Güncelleme hatası", error });
+  }
 });
 
-router.get("/:id", async (req, res) => {
-   const { id } = req.params;
+// ✅ Belirli görevi ID ile getir
+router.get("/:id", authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
 
   const todo = await prisma.todo.findUnique({
     where: { id: Number(id) },
   });
 
   if (!todo) {
-    return res.status(404).json({ message: "Görev bulunamadi" });
+    res.status(404).json({ message: "Görev bulunamadı" });
+    return;
   }
 
   res.json(todo);
 });
 
-// Belirli bir todo'yu id'ye göre sil
-router.delete("/:id", async (req, res) => {
+// ✅ Görevi sil
+router.delete("/:id", authMiddleware, async (req: Request, res: Response): Promise<void> => {
   const id = Number(req.params.id);
 
   try {
@@ -53,12 +77,10 @@ router.delete("/:id", async (req, res) => {
       where: { id },
     });
 
-    res.json({ message: "Todo başariyla silindi", deletedTodo });
+    res.json({ message: "Görev silindi", deletedTodo });
   } catch (error) {
-    res.status(404).json({ message: "Todo bulunamadi veya silinemedi." });
+    res.status(404).json({ message: "Silinemedi", error });
   }
 });
-
-
 
 export default router;
