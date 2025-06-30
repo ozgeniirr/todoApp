@@ -5,5 +5,5 @@ export const createTodoSchema = z.object({
 });
 export const todoIdParamsSchema = z.object({
   id: z.string().regex(/^\d+$/, "id sayısal olmalı"),
-});
+}); 
 export type CreateTodoInput = z.infer<typeof createTodoSchema>;
