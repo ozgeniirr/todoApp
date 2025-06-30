@@ -1,24 +1,53 @@
 import { Router, Request, Response } from "express";
 import prisma from "../db/prismaClient";
 import { authMiddleware } from "../middleware/authMiddleware";
+import { createTodoSchema, todoIdParamsSchema } from "../utils/validators/todoValidator";
+
 
 const router = Router();
 
 // ✅ Tüm görevleri getir (sadece giriş yapan kullanıcıya ait)
 router.get("/", authMiddleware, async (req: Request, res: Response): Promise<void> => {
   const userId = (req as any).userId;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string)|| 2;
+
+  const skip = (page -1)* limit;
+
+   const total = await prisma.todo.count({where :{ userId}});
+
+
 
   const todos = await prisma.todo.findMany({
     where: { userId },
+    skip,
+      take: limit,
+      orderBy: { createdAt: "desc" }
   });
 
-  res.json(todos);
+  res.json({
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      data: todos
+});
 });
 
 // ✅ Yeni görev oluştur
-router.post("/", authMiddleware, async (req: Request, res: Response): Promise<void> => {
+router.post("/", authMiddleware, async (req: Request, res: Response): Promise<any> => {
   const userId = (req as any).userId;
-  const { title } = req.body;
+  const parsed = createTodoSchema.safeParse(req.body);
+
+  if (!parsed.success) {
+    return res.status(400).json({
+      message: "Validation error",
+      errors: parsed.error.flatten().fieldErrors,
+    });
+  }
+
+  const title = parsed.data.title;
+
 
   try {
     const newTodo = await prisma.todo.create({
@@ -53,8 +82,17 @@ router.put("/:id", authMiddleware, async (req: Request, res: Response): Promise<
 });
 
 // ✅ Belirli görevi ID ile getir
-router.get("/:id", authMiddleware, async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
+router.get("/:id", authMiddleware, async (req: Request, res: Response): Promise<any> => {
+  const parsed= todoIdParamsSchema.safeParse(req.params)
+
+    if (!parsed.success) {
+    return res.status(400).json({
+      message: "Geçersiz ID",
+      errors: parsed.error.flatten().fieldErrors,
+    });
+  }
+
+  const id = parsed.data.id;
 
   const todo = await prisma.todo.findUnique({
     where: { id: Number(id) },
