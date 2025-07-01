@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+/*import { Router, Request, Response } from "express";
 import prisma from "../db/prismaClient";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { createTodoSchema, todoIdParamsSchema
@@ -199,4 +199,4 @@ router.get("/:id", authMiddleware, async (req: Request, res: Response): Promise<
 
 
 
-export default router;
+export default router;*/

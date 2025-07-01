@@ -1,4 +1,4 @@
-import express from "express";
+/*import express from "express";
 import authRoutes from "./routes/auth";
 import todoRoutes from "./routes/todo";
 
@@ -13,4 +13,4 @@ app.use("/todos", todoRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Server is running at http://localhost:${PORT}`);
-});
+});*/

@@ -1,5 +1,5 @@
 // src/routes/auth.ts
-import { Router, Request, Response } from "express";
+/*import { Router, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../db/prismaClient";
@@ -118,4 +118,4 @@ router.get("/profile", authMiddleware, async (req: Request, res: Response): Prom
   }
 });
 
-export default router;
+export default router;*/

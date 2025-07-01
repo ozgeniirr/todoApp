@@ -9,8 +9,8 @@ import{
 
 const router = express.Router();
 
-router.post("/register", authMiddleware, registerUser);
-router.post("/login", authMiddleware, loginUser );
+router.post("/register",registerUser);
+router.post("/login",  loginUser );
 router.get("/profile", authMiddleware, getProfile );
 
 /*
