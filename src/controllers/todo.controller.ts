@@ -7,7 +7,7 @@ import {
   deleteTodoService
 } from "../services/todo.service";
 
-import { createTodoSchema, todoIdParamsSchema } from "../validators/todoValidator";
+import { createTodoSchema, todoIdParamsSchema, updateTodoSchema } from "../validators/todoValidator";
 
 export const getAllTodos = async (req: Request, res: Response) => {
   const userId = (req as any).userId;
@@ -22,7 +22,7 @@ export const getAllTodos = async (req: Request, res: Response) => {
   }
 };
 
-export const createTodo = async (req: Request, res: Response):Promise<any> => {
+export const createTodo = async (req: Request, res: Response): Promise<any> => {
   const userId = (req as any).userId;
   const parsed = createTodoSchema.safeParse(req.body);
 
@@ -33,27 +33,50 @@ export const createTodo = async (req: Request, res: Response):Promise<any> => {
     });
   }
 
+  const { title, priority } = parsed.data;
+
   try {
-    const newTodo = await createTodoService(userId, parsed.data.title);
+    const newTodo = await createTodoService({
+      userId,
+      title,
+      priority,
+    });
+
     res.status(201).json(newTodo);
   } catch (error) {
     res.status(500).json({ message: "Görev eklenemedi", error });
   }
 };
 
-export const updateTodo = async (req: Request, res: Response) => {
+export const updateTodo = async (req: Request, res: Response):Promise<any> => {
   const id = Number(req.params.id);
+
+  if (!req.body || typeof req.body.completed === "undefined") {
+  return res.status(400).json({ message: "completed alanı eksik veya hatalı." });
+}
   const { completed } = req.body;
+  const parsed = updateTodoSchema.safeParse(req.body);
+
+  if(!parsed.success){
+    return res.status(400).json({
+      message:"Validation error",
+      errors: parsed.error.flatten().fieldErrors,
+
+    });
+  }
+
+  const {title, priority} = parsed.data;
+    
 
   try {
-    const updated = await updateTodoService(id, completed);
+    const updated = await updateTodoService(id, completed, title, priority);
     res.json(updated);
   } catch (error) {
     res.status(500).json({ message: "Güncelleme hatası", error });
   }
 };
 
-export const getTodoById = async (req: Request, res: Response): Promise<any>=> {
+export const getTodoById = async (req: Request, res: Response): Promise<any> => {
   const parsed = todoIdParamsSchema.safeParse(req.params);
 
   if (!parsed.success) {

@@ -8,13 +8,16 @@ datasource db {
 }
 
 model Todo {
-  id        Int    @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   title     String
-  userId    Int
-  user      User  @relation(fields: [userId], references: [id])
-  completed Boolean @default(false)
+  completed Boolean  @default(false)
+  priority  String   @default("low") // yeni eklenen alan
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
 }
+
 
 model User {
   id       Int     @id @default(autoincrement())
