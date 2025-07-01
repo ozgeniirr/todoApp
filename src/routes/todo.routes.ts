@@ -1,4 +1,27 @@
-import { Router, Request, Response } from "express";
+import { Router } from "express";
+import { authMiddleware } from "../middleware/authMiddleware";
+import {
+  getAllTodos,
+  createTodo,
+  updateTodo,
+  getTodoById,
+  deleteTodo
+} from "../controllers/todo.controller";
+
+const router = Router();
+
+router.get("/", authMiddleware, getAllTodos);
+router.post("/", authMiddleware, createTodo);
+router.put("/:id", authMiddleware, updateTodo);
+router.get("/:id", authMiddleware, getTodoById);
+router.delete("/:id", authMiddleware, deleteTodo);
+
+
+
+
+
+
+/*import { Router, Request, Response } from "express";
 import prisma from "../db/prismaClient";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { createTodoSchema, todoIdParamsSchema } from "../validators/todoValidator";
@@ -118,6 +141,6 @@ router.delete("/:id", authMiddleware, async (req: Request, res: Response): Promi
   } catch (error) {
     res.status(404).json({ message: "Silinemedi", error });
   }
-});
+});*/
 
 export default router;

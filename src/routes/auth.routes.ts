@@ -1,17 +1,19 @@
 // src/routes/auth.ts
-import { Router, Request, Response } from "express";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import prisma from "../db/prismaClient";
 import { authMiddleware } from "../middleware/authMiddleware";
 import express from "express";
-import { registerSchema } from "../validators/userValidator";
+import{
+  registerUser,
+  loginUser,
+  getProfile
+} from "../controllers/auth.controller";
 
 const router = express.Router();
 
-//export default router;
+router.post("/register", authMiddleware, registerUser);
+router.post("/login", authMiddleware, loginUser );
+router.get("/profile", authMiddleware, getProfile );
 
-//const router = Router();
+/*
 
 // REGISTER → Yeni kullanıcı oluştur
 router.post("/register", async (req: Request, res: Response): Promise<any> => {
@@ -117,5 +119,5 @@ router.get("/profile", authMiddleware, async (req: Request, res: Response): Prom
     res.status(500).json({ message: "Sunucu hatası", error });
   }
 });
-
+*/
 export default router;

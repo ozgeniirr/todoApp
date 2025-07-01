@@ -1,6 +1,6 @@
 import express from "express";
-import authRoutes from "./routes/auth";
-import todoRoutes from "./routes/todo";
+import authRoutes from "./routes/auth.routes";
+import todoRoutes from "./routes/todo.routes";
 
 const app = express();
 const PORT = 3000;
